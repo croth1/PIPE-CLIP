@@ -3,7 +3,7 @@
 # Usage: definition of alignment files including BED and BAM
 
 import gzip
-import Enrich
+from . import Enrich
 
 class BED():
 	def __init__(self,chr,start,stop,name,score,strand):

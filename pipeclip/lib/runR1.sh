@@ -8,6 +8,9 @@ steps=(0.1 0.08 0.05)
 #sleep 500
 #status=0
 
+# http://stackoverflow.com/a/24112741/2272172
+parent_path=$( cd "$(dirname "${BASH_SOURCE}")" ; pwd -P )
+
 #check if file is generated
 #while ["$status" == "0"]
 #do
@@ -45,7 +48,7 @@ do
 			echo
 		else
 			#echo "$e,$s"
-			Rscript lib/ZTNB_tryCatch.R $filename $pvalue $e $s
+			Rscript $parent_path/ZTNB_tryCatch.R $filename $pvalue $e $s
 		fi
 		#echo "$filename.$count"
 		count=$((count+1))

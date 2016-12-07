@@ -11,9 +11,9 @@ import copy
 import pysam
 from pysam import *
 import argparse as ap
-from Alignment import MutationBed
+from .Alignment import MutationBed
 import logging
-import OptValidator
+from . import OptValidator
 
 OptValidator.opt_validate()
 
@@ -255,7 +255,7 @@ def getMutations(infile,read):
 	insertionSeqLoc = []
 	if insertion > 0:
 		insertionDic = insertionLocation(read,insertion)
-		for k in insertionDic.keys():
+		for k in list(insertionDic.keys()):
 			for loc_index in range(len(insertionDic[k])):
 				insertionSeqLoc.append(insertionDic[k][loc_index])
 				mu = read.seq[insertionDic[k][loc_index]]

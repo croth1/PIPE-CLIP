@@ -13,11 +13,11 @@ import logging
 from subprocess import call
 import os
 import gc
-import CLIP
-import Alignment
-import Utils
-import Enrich
-import OptValidator
+from . import CLIP
+from . import Alignment
+from . import Utils
+from . import Enrich
+from . import OptValidator
 
 gc.enable()
 
@@ -59,7 +59,7 @@ def runPipeClip(infile,outputPrefix,matchLength,mismatch,rmdup,fdrEnrichedCluste
 				logging.error("There is no clusters found. Please check input.Exit program.")
 				sys.exit(1)
 			
-			if len(myClip.mutations.keys())>0:
+			if len(list(myClip.mutations.keys()))>0:
 				logging.info("Get reliable mutations")
 				Enrich.mutationEnrich(myClip,fdrReliableMutation)
 				myClip.printReliableMutations()
@@ -69,7 +69,7 @@ def runPipeClip(infile,outputPrefix,matchLength,mismatch,rmdup,fdrEnrichedCluste
 			if myClip.sigClusterCount > 0 and myClip.sigMutationCount>0:
 				logging.info("Get cross-linking sites")
 				myClip.getCrosslinking()
-				if (len(myClip.crosslinking.keys())>0):
+				if (len(list(myClip.crosslinking.keys()))>0):
 					outfilelist = myClip.printCrosslinkingSites()
 					myClip.printCrosslinkingMutations()
 				else:
@@ -89,7 +89,7 @@ def runPipeClip(infile,outputPrefix,matchLength,mismatch,rmdup,fdrEnrichedCluste
 				#logging.debug("Start to do annotation for %s" % name)
 				Utils.annotation(name,species)
 	else:
-		print >> sys.stderr, "File corruputed, program exit."
+		print("File corruputed, program exit.", file=sys.stderr)
 		sys.exit(0)
 	
 	

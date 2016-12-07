@@ -35,7 +35,7 @@ class fqList:
         st.append(buf[i+2])
         st.append(buf[i+3].rstrip())
         self.addFq(st)
-        if not self.unique.has_key(buf[i+1]):
+        if buf[i+1] not in self.unique:
           self.addUniqFq(st,bl)
         st = []
 
@@ -57,15 +57,15 @@ class barcodeRemover:
   def run(self):
     myfq = fqList()
     myfq.readFq(self.infile,self.barLen)
-    for item in myfq.unique.values():
+    for item in list(myfq.unique.values()):
       if len(item.seq)>=15:
-        print item
+        print(item)
 
 def barCodeRemovalMain(infilePath,barLenStr):
   try:
     infile = open(infilePath,"r+")
-  except IOError,message:
-    print >> sys.stderr, "cannot open file",message
+  except IOError as message:
+    print("cannot open file",message, file=sys.stderr)
     sys.exit(1)  
   try:
     barLen = int(barLenStr)
@@ -77,8 +77,8 @@ def barCodeRemovalMain(infilePath,barLenStr):
 def barCodeRemovalMain():
   try:
     infile = open(sys.argv[1],"r+")
-  except IOError,message:
-    print >> sys.stderr, "cannot open file",message
+  except IOError as message:
+    print("cannot open file",message, file=sys.stderr)
     sys.exit(1)  
   try:
     barLen = int(sys.argv[2])

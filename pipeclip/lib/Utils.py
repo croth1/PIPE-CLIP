@@ -3,7 +3,7 @@
 # Usage: definition of utilities to handel pysam classes
 
 import sys
-import Alignment
+from . import Alignment
 import subprocess
 import logging
 

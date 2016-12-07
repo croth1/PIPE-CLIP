@@ -6,10 +6,10 @@ import logging
 import math
 import pysam
 import random
-import Utils
-import Alignment
-import Mutation2
-import OptValidator
+from . import Utils
+from . import Alignment
+from . import Mutation2
+from . import OptValidator
 import subprocess
 import datetime
 import time
@@ -89,7 +89,7 @@ class CLIP:
 		else:#sort the BAM
 			logging.info("Input is not sorted, sorting file...")
 			bamsort = ".".join(self.filepath.split(".")[0:-1])+"."+"sort"
-			pysam.sort(self.filepath,bamsort)
+			pysam.sort(self.filepath, '-o', bamsort +'.bam')
 			pysam.index(bamsort+".bam")
 			self.filepath = bamsort+".bam" # change input file path
 			self.header = pysam.view("-H",bamsort+".bam")
@@ -101,9 +101,9 @@ class CLIP:
 	def readfile(self):
 		try:
 			self.originalBAM = pysam.Samfile(self.filepath,"rb")
-			self.refInfo = zip(self.originalBAM.references,self.originalBAM.lengths)
+			self.refInfo = list(zip(self.originalBAM.references,self.originalBAM.lengths))
 			return True
-		except IOError,message:
+		except IOError as message:
 			logging.error("Cannot open input file")
 			return False
 
@@ -115,13 +115,13 @@ class CLIP:
 		outfile = open(self.outprefix+".clusters.bed","w")
 		for i in [self.clusters_plus,self.clusters_minus]:
 			for j in i:
-				print >>outfile,j
+				print(j, file=outfile)
 		outfile.close()
 
 	def printMutations(self):
 		outfile = open(self.outprefix+".mutations.bed","w")
-		for i in self.mutations.values():
-			print >>outfile,i
+		for i in list(self.mutations.values()):
+			print(i, file=outfile)
 		outfile.close()
 
 
@@ -130,39 +130,39 @@ class CLIP:
 		for chr,chrlen in self.refInfo:
 			outfile = open(self.outprefix+"."+chr+".mutations.bed","w")
 			fhs[chr] = outfile
-		for i in self.mutations.itervalues():
-			print >>fhs[i.chr],i
+		for i in self.mutations.values():
+			print(i, file=fhs[i.chr])
 		#clean up
-		for fh in fhs.itervalues():
+		for fh in fhs.values():
 			fh.close()
 		del fhs
 
 
 	def printMutationSingleChr(self,chr):
 		outfile = open(self.outprefix+"."+chr+".mutations.bed","w")
-		for i in self.mutations.itervalues():
-			print >>outfile,i
+		for i in self.mutations.values():
+			print(i, file=outfile)
 		#clean up
 		outfile.close()
 	
 	def printReliableMutations(self):
 		outfile = open(self.outprefix+".reliableMutations.pipeclip.bed","w")
 		header = "#chr\tstart\tstop\tmutation_name\tM_value\tstrand\ttype\tK_value\tp_value\tfdr"
-		print >> outfile,header
+		print(header, file=outfile)
 		self.printEnrichedItem(self.sigMutations,outfile)
 
 	
 	def printEnrichedClusters(self):
 		outfile = open(self.outprefix+".enrichedClusters.pipeclip.bed","w")
 		header = "#chr\tstart\tstop\tcluster_name\tread_count\tstrand\tp_value\tfdr"
-		print >> outfile,header
+		print(header, file=outfile)
 		self.printReliableList(self.clusters,outfile)
 		return [self.outprefix+".enrichedClusters.pipeclip.bed"]
 	
 	def printCrosslinkingMutations(self):
 		outfile = open(self.outprefix+".crosslinkingMutations.pipeclip.bed","w")
 		header = "#chr\tstart\tstop\tmutation_name\tM_value\tstrand\ttype\tK_value\tp_value\tfdr"
-		print >> outfile,header
+		print(header, file=outfile)
 		self.printReliableList(self.crosslinkingMutations,outfile)
 
 
@@ -171,18 +171,18 @@ class CLIP:
 			if i.sig:
 				st = i.__str__()
 				st += "\t"+str(i.pvalue)+"\t"+str(i.qvalue)
-				print >>fh,st
+				print(st, file=fh)
 	
 	def printList(self,mylist,fh):
 		for i in mylist:
-			print >>fh,i
+			print(i, file=fh)
 
 	def printEnrichedItem(self,dic,fh):
-		for k in dic.keys():
+		for k in list(dic.keys()):
 			for i in dic[k]:
 				st = i.__str__()
 				st += "\t"+str(i.pvalue)+"\t"+str(i.qvalue)
-				print >> fh,st
+				print(st, file=fh)
 	
 	def printCrosslinkingSites(self):
 		output = self.outprefix
@@ -191,13 +191,13 @@ class CLIP:
 			output_del = open(output+"_deletion_crosslinking.pipeclip.txt","w")
 			output_sub = open(output+"_substitution_crosslinking.pipeclip.txt","w")
 			output_ins = open(output+"_insertion_crosslinking.pipeclip.txt","w")
-			print >> output_del,header
-			print >> output_sub,header
-			print >> output_ins,header
+			print(header, file=output_del)
+			print(header, file=output_sub)
+			print(header, file=output_ins)
 		else:
 			output_name = open(output+"_crosslinking.pipeclip.txt","w")
-			print >> output_name,header
-		for k in self.crosslinking.keys():
+			print(header, file=output_name)
+		for k in list(self.crosslinking.keys()):
 			st = self.crosslinking[k].__str__()
 			st += "\t"+"\t".join([str(self.crosslinking[k].qvalue),str(self.crosslinking[k].fisherP)])
 			st += "\t"+",".join(self.crosslinking[k].mutationStarts)
@@ -205,13 +205,13 @@ class CLIP:
 			if self.type == 0:
 				output_key =  k.split("_")[-1]
 				if output_key == "Deletion":
-					print >> output_del,st
+					print(st, file=output_del)
 				elif output_key == "Insertion":
-					print >> output_ins,st
+					print(st, file=output_ins)
 				elif output_key == "Substitution":
-					print >> output_sub,st
+					print(st, file=output_sub)
 			else:
-				print >> output_name,st
+				print(st, file=output_name)
 		
 		if self.type == 0:
 			output_del.close()
@@ -308,7 +308,7 @@ class CLIP:
 				#print m
 				self.mutationCount += 1
 				m_key = "_".join([m.chr,str(m.start),m.strand,m.type])
-				if self.mutations.has_key(m_key):
+				if m_key in self.mutations:
 					self.mutations[m_key].increaseScore()
 				else:
 					self.mutations[m_key]=m
@@ -326,7 +326,7 @@ class CLIP:
 
 	def addSigToDic(self,dic,mu):
 		'''Add new mutation into the dictionary.Mutations should be sorted'''
-		if dic.has_key(mu.chr):
+		if mu.chr in dic:
 			dic[mu.chr].append(mu)
 		else:
 			dic[mu.chr] = [mu]
@@ -337,7 +337,7 @@ class CLIP:
 		'''
 		for cluster in self.clusters:
 			#logging.debug("P value of cluster is %f" % cluster.pvalue)
-			if cluster.sig and self.sigMutations.has_key(cluster.chr):
+			if cluster.sig and cluster.chr in self.sigMutations:
 				for mutation in self.sigMutations[cluster.chr]:
 					#logging.debug("Cluster loc %d,%d ; Mutation loc %d,%d, mutation type %s" % (cluster.start,cluster.stop,mutation.start,mutation.stop,mutation.type))
 					if cluster.overlap(mutation):
@@ -349,7 +349,7 @@ class CLIP:
 							cross_key = cluster.name+"_"+mutation_key
 						else:
 							cross_key = cluster.name
-						if self.crosslinking.has_key(cross_key):
+						if cross_key in self.crosslinking:
 							#logging.debug("Existing mutation pvalue:",self.crosslinking[cluster.name].mutationP)
 							self.crosslinking[cross_key].addMutation(mutation)
 							self.crosslinkingMutations.append(mutation)
@@ -357,7 +357,7 @@ class CLIP:
 							self.crosslinking[cross_key] = Alignment.CrosslinkingBed(cluster.chr,cluster.start,cluster.stop,cluster.name,cluster.score,cluster.strand,cluster.pvalue,cluster.qvalue,mutation.start,mutation.name,mutation.pvalue)
 							self.crosslinkingMutations.append(mutation)
 		#start to calculate fisher test p value
-		for k in self.crosslinking.iterkeys():
+		for k in self.crosslinking.keys():
 			self.crosslinking[k].fishertest()
 
 
