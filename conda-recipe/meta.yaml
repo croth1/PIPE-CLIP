@@ -1,0 +1,35 @@
+{% set commit_id="2d4c38a6040e2bca0508c26ba3b46c6be2287fbb" %}
+{% set version="1.1.0" %}
+
+package:
+    name: pipeclip
+    version: {{ version }}
+
+source:
+    git_url: git@bitbucket.org:croth1/pipeclip.git
+    git_rev: {{ commit_id }}
+
+build:
+    script: python setup.py install --single-version-externally-managed --record=record.txt
+    number: 0
+    skip: True  #  [not py3k]
+    entry_points:
+        - pipeclip = pipeclip.pipeclip:main
+
+requirements:
+    build:
+      - python
+
+    run:
+      - python
+      - r-base
+      - pysam
+      - pybedtools
+      - rpy2
+      - r-mass
+      - r-vgam
+
+test:
+    imports:
+      - pipeclip
+      - pipeclip.lib
